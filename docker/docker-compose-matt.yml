@@ -1,0 +1,49 @@
+services:
+  # ─────────────────────────────────────────────
+  # PINCHY (Development / Infrastructure)
+  # ─────────────────────────────────────────────
+  pinchy:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-matt
+    container_name: pinchy-agent
+    user: "1000:1000"  # <--- FORCE YOUR USER ID (Check `id -u` on NUC)
+    environment:
+      - DOCKER_HOST=tcp://dockerproxy:2375
+      - AGENT_NAME=Pinchy
+    profiles: ["pinchy"]
+    volumes:
+      - /opt/docker/picoclaw-instances/pinchy/config.json:/home/node/.picoclaw/config.json:ro
+      - /opt/docker/picoclaw-instances/pinchy/workspace:/home/node/.picoclaw/workspace
+      - picoclaw-npm-cache:/root/.npm
+    entrypoint: ["picoclaw", "gateway"] # Or "agent" for one-shot
+    networks:
+      - picoclaw_net
+
+  # ─────────────────────────────────────────────
+  # LISA (Legal / Project 03)
+  # ─────────────────────────────────────────────
+  lisa:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-matt
+    container_name: lisa-legal
+    user: "1000:1000"
+    environment:
+      - DOCKER_HOST=tcp://dockerproxy:2375
+      - AGENT_NAME=Lisa
+    profiles: ["lisa"]
+    volumes:
+      - /opt/docker/picoclaw-instances/lisa/config.json:/home/node/.picoclaw/config.json:ro
+      - /opt/docker/picoclaw-instances/lisa/workspace:/home/node/.picoclaw/workspace
+      - picoclaw-npm-cache:/root/.npm
+    command: ["gateway"]
+    networks:
+      - picoclaw_net
+
+volumes:
+  picoclaw-npm-cache:
+
+networks:
+  picoclaw_net:
+    external: true
